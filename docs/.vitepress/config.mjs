@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Front-End interviews",
   description: "fe interview",
-  outDir: "../public",
+  // outDir: "../public",
   // base: "/fe-interview/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
