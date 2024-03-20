@@ -52,7 +52,8 @@ export const sidebarConst = {
         text: '工程化',
         items: [
             { text: '基础', link: '/engineering/' },
-            { text: 'Vite', link: '/engineering/vite' }
+            { text: 'Vite', link: '/engineering/vite' },
+            { text: 'Webpack', link: '/engineering/webpack' },
         ]
     }],
 }
