@@ -7,7 +7,7 @@ export const navConst = [
     { text: 'Vue.js', link: '/vue/'},
     { text: 'React', link: '/react/'},
     { text: 'TypeScript', link: '/ts/'},
-    { text: '工程化', link: '/engineering/'},
+    { text: '工程化', link: '/engineering/', activeMatch: '/engineering/'},
 ]
 
 export const sidebarConst = {
@@ -51,7 +51,8 @@ export const sidebarConst = {
     '/engineering/': [{
         text: '工程化',
         items: [
-            { text: '基础', link: '/engineering/' }
+            { text: '基础', link: '/engineering/' },
+            { text: 'Vite', link: '/engineering/vite' }
         ]
     }],
 }
