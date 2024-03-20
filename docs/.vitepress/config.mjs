@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Front-End interviews",
   description: "fe interview",
+  base: './',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
