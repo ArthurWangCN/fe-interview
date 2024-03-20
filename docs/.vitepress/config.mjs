@@ -5,7 +5,7 @@ export default defineConfig({
   title: "Front-End interviews",
   description: "fe interview",
   // outDir: "../public",
-  // base: "/fe-interview/",
+  base: "/fe-interview/",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
