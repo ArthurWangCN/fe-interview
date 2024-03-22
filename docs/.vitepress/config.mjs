@@ -7,6 +7,9 @@ export default defineConfig({
   description: "fe interview",
   // outDir: "../public",
   base: "/fe-interview/",
+  head: [
+    ['link', {rel: 'icon', href: '/fe-interview/favicon.ico'}]
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: navConst,
@@ -14,7 +17,7 @@ export default defineConfig({
     sidebar: sidebarConst,
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/arthurwangcn' }
     ]
   }
 })
