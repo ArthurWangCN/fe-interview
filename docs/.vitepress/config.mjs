@@ -8,7 +8,7 @@ export default defineConfig({
   // outDir: "../public",
   base: "/fe-interview/",
   head: [
-    ['link', {rel: 'icon', href: '/favicon.ico'}]
+    ['link', {rel: 'icon', href: '/fe-interview/favicon.ico'}]
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
