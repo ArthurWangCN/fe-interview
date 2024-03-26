@@ -117,8 +117,6 @@ selectedColor = 0;	// 有效的，这也是 Color.Red
 
 
 
-
-
 ## 什么是联合类型和交叉类型
 
 `联合类型`表示一个值可以是多种类型中的一种，而`交叉类型`表示一个新类型，它包含了多个类型的特性。
@@ -189,4 +187,182 @@ selectedColor = 0;	// 有效的，这也是 Color.Red
 - 降低了代码的可维护性和可读性，因为难以理解某些变量或参数的具体类型。
 
 因此，在实际开发中，应尽量避免过度使用`any`类型。可以通过合适的类型声明、接口定义和联合类型等方式，提高代码的健壮性和可维护性。
+
+
+
+## 什么是TypeScript中的声明文件
+
+声明文件（通常以 `.d.ts` 扩展名结尾）用于描述已有 JavaScript 代码库的类型信息。它们提供了类型定义和元数据，以便在 TypeScript 项目中使用这些库时获得智能感知和类型安全。
+
+
+
+## 什么是命名空间（Namespace）和模块（Module） 
+
+```
+模块
+```
+
+- 在一个大型项目中，可以将相关的代码组织到单独的文件，并使用模块来导入和导出这些文件中的功能。
+- 在一个 Node.js 项目中，可以使用 import 和 export 关键字来创建模块，从而更好地组织代码并管理依赖关系。
+
+```
+命名空间
+```
+
+- 在面向对象的编程中，命名空间可以用于将具有相似功能或属性的类、接口等进行分组，以避免全局命名冲突。
+- 这在大型的 JavaScript 或 TypeScript 应用程序中特别有用，可以确保代码结构清晰，并且不会意外地重复定义相同的名称。
+
+`模块`提供了一种组织代码的方式，使得我们可以轻松地在多个文件中共享代码，
+
+`命名空间`则提供了一种在全局范围内组织代码的方式，防止命名冲突。
+
+模块示例:
+
+```ts
+// greeter.ts
+export function sayHello(name: string) {
+  return `Hello, ${name}!`;
+}
+// app.ts
+import { sayHello } from './greeter';
+console.log(sayHello('John'));
+```
+
+命名空间示例:
+
+```ts
+// greeter.ts
+namespace Greetings {
+  export function sayHello(name: string) {
+    return `Hello, ${name}!`;
+  }
+}
+// app.ts
+<reference path="greeter.ts" />
+console.log(Greetings.sayHello('John'));
+```
+
+在上面的示例中：
+
+- 使用模块时，我们可以使用 `export` 和 `import` 关键字来定义和引入模块中的函数或变量。
+- 而在命名空间中，我们使用 namespace 来创建命名空间，并且需要在使用之前使用 ` <reference path="file.ts" /> `来引入命名空间。
+
+
+
+## TypeScript中的可选参数和默认参数是什么
+
+- 可选参数允许函数中的某些参数不传值，在参数后面加上问号`?`表示可选。
+- 默认参数允许在声明函数时为参数指定`默认值`，这样如果调用时未提供参数值，则会使用默认值。
+
+可选参数示例：
+
+```ts
+function greet(name: string, greeting?: string) {
+  if (greeting) {
+    return `${greeting}, ${name}!`;
+  } else {
+    return `Hello, ${name}!`;
+  }
+}
+```
+
+默认参数示例：
+
+```ts
+function greet(name: string, greeting: string = "Hello") {
+  return `${greeting}, ${name}!`;
+}
+```
+
+
+
+## 类型守卫
+
+
+
+## const和readonly的区别
+
+当在TypeScript中使用`const`和`readonly`时，它们的行为有一些显著的区别：
+
+- **const：**
+
+  - `const`用于声明常量值。一旦被赋值后，其值将不能被重新赋值或修改。
+  - 常量必须在声明时就被赋值，并且该值不可改变。
+  - 常量通常用于存储不会发生变化的值，例如数学常数或固定的配置值。
+
+  ```ts
+  const PI = 3.14;
+  PI = 3.14159; // Error: 无法重新分配常量
+  ```
+
+- **readonly：**
+
+  - `readonly`关键字用于标记类的属性，表明该属性只能在类的构造函数或声明时被赋值，并且不能再次被修改。
+  - `readonly`属性可以在声明时或构造函数中被赋值，但之后不能再被修改。
+  - `readonly`属性通常用于表示对象的某些属性是只读的，防止外部代码修改这些属性的值。
+
+  ```ts
+  class Person {
+      readonly name: string;
+  
+      constructor(name: string) {
+          this.name = name; // 可以在构造函数中赋值
+      }
+  }
+  
+  let person = new Person("Alice");
+  person.name = "Bob"; // Error: 无法分配到"name"，因为它是只读属性
+  ```
+
+总结来说，`const`主要用于声明常量值，而`readonly`则用于标记类的属性使其只读。
+
+
+
+##  interface可以给Function/Array/Class（Indexable)做声明吗
+
+在TypeScript中，`interface`可以用来声明函数、数组和类（具有索引签名的类）。下面是一些示例代码：
+
+**1. Interface 声明函数**
+
+```ts
+interface MyFunc {
+  (x: number, y: number): number;
+}
+
+let myAdd: MyFunc = function(x, y) {
+  return x + y;
+};
+```
+
+在上述示例中，`MyFunc`接口描述了一个函数类型，该函数接受两个参数并返回一个数字。
+
+**2. Interface 声明数组**
+
+```ts
+interface StringArray {
+  [index: number]: string;
+}
+
+let myArray: StringArray;
+myArray = ["Bob", "Alice"];
+```
+
+上面的示例中，`StringArray`接口描述了一个具有数字索引签名的字符串数组。意味着我们可以通过数字索引来访问数组元素。
+
+**3. Interface 声明类（Indexable）**
+
+```ts
+interface StringDictionary {
+  [index: string]: string;
+}
+
+let myDict: StringDictionary = {
+  "name": "John",
+  "age": "30"
+};
+```
+
+在这个例子中，`StringDictionary`接口用于描述具有字符串索引签名的类或对象。这使得我们可以像操作字典一样使用对象的属性。
+
+综上：TypeScript中的`interface`可以被用来声明函数、数组和具有索引签名的类，从而帮助我们定义和限定这些数据结构的形式和行为。
 
