@@ -30,7 +30,7 @@ export const sidebarConst = {
         text: ' JavaScript',
         items: [
             { text: '基础', link: '/js/' },
-            { text: '原型和原型链', link: '/js/prototype' },
+            { text: '继承与原型', link: '/js/prototype' },
         ]
     }],
     '/vue/': [{
@@ -42,7 +42,8 @@ export const sidebarConst = {
     '/react/': [{
         text: 'React',
         items: [
-            { text: '基础', link: '/react/' }
+            { text: '基础', link: '/react/' },
+            { text: 'React 对比 Vue3', link: '/react/reactvsvue' }
         ]
     }],
     '/ts/': [{
