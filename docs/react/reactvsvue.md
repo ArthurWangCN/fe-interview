@@ -1,11 +1,7 @@
 ## 响应式
 
 ### 声明
-
-<div style="display: flex; align-items: center;">
-    <img src="https://cn.vuejs.org/logo.svg" width="32" height="32" />
-    <span style="margin-left: 5px;">Vue3：</span>
-</div>
+![](/vue.png)
 
 ```vue
 <script setup>
@@ -18,10 +14,7 @@ const name = ref("张三");
 </template>
 ```
 
-<div style="display: flex; align-items: center;">
-    <img src="https://react.dev/favicon.ico" width="32" height="32" />
-    <span style="margin-left: 5px;">react：</span>
-</div>
+![](/react.png)
 
 ```jsx
 import { useState } from "react";
@@ -37,10 +30,7 @@ export default function Name() {
 
 ### 更新
 
-<div style="display: flex; align-items: center;">
-    <img src="https://cn.vuejs.org/logo.svg" width="32" height="32" />
-    <span style="margin-left: 5px;">Vue3：</span>
-</div>
+![](/vue.png)
 
 ```vue
 <script setup>
@@ -54,10 +44,7 @@ name.value = "李四";
 </template>
 ```
 
-<div style="display: flex; align-items: center;">
-    <img src="https://react.dev/favicon.ico" width="32" height="32" />
-    <span style="margin-left: 5px;">react：</span>
-</div>
+![](/react.png)
 
 ```jsx
 import { useState } from "react";
@@ -70,6 +57,54 @@ export default function Name() {
 }
 ```
 
+---
 
+### 计算属性
 
+![](/vue.png)
+
+```vue
+<script setup>
+import { ref, computed } from "vue";
+const count = ref(10);
+const doubleCount = computed(() => count.value * 2);
+</script>
+
+<template>
+  <div>{{ doubleCount }}</div>
+</template>
+```
+
+![](/react.png)
+
+```jsx
+import { useState } from "react";
+
+export default function DoubleCount() {
+  const [count] = useState(10);
+  const doubleCount = count * 2;
+
+  return <div>{doubleCount}</div>;
+}
+```
+
+## 模板语法
+
+### 最小Template
+
+![](/vue.png)
+
+```vue
+<template>
+  <h1>这是一段示范文字</h1>
+</template>
+```
+
+![](/react.png)
+
+```jsx
+export default function HelloWorld() {
+  return <h1>这是一段示范文字</h1>;
+}
+```
 
