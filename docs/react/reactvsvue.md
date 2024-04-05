@@ -323,3 +323,193 @@ export default function TrafficLight() {
 }
 ```
 
+## 生命周期-页面加载
+
+![](/vue.png)
+
+```vue
+<script setup>
+import { ref, onMounted } from "vue";
+const pageTitle = ref("");
+onMounted(() => {
+  pageTitle.value = document.title;
+});
+</script>
+
+<template>
+  <p>页面标题: {{ pageTitle }}</p>
+</template>
+```
+
+![](/react.png)
+
+```jsx
+import { useState, useEffect } from "react";
+
+export default function PageTitle() {
+  const [pageTitle, setPageTitle] = useState("");
+
+  useEffect(() => {
+    setPageTitle(document.title);
+  }, []);
+
+  return <p>页面标题: {pageTitle}</p>;
+}
+```
+
+## 生命周期-页面卸载
+
+![](/vue.png)
+
+```vue
+<script setup>
+import { ref, onUnmounted } from "vue";
+
+const time = ref(new Date().toLocaleTimeString());
+
+const timer = setInterval(() => {
+  time.value = new Date().toLocaleTimeString();
+}, 1000);
+
+onUnmounted(() => {
+  clearInterval(timer);
+});
+</script>
+
+<template>
+  <p>当前时间: {{ time }}</p>
+</template>
+```
+
+![](/react.png)
+
+```jsx
+import { useState, useEffect } from "react";
+
+export default function Time() {
+  const [time, setTime] = useState(new Date().toLocaleTimeString());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return <p>当前时间: {time}</p>;
+}
+```
+
+## props
+
+![](/vue.png)
+
+App.vue
+
+```vue
+<script setup>
+import UserProfile from "./UserProfile.vue";
+</script>
+
+<template>
+  <UserProfile
+    name="张三"
+    :age="20"
+    :favourite-colors="['green', 'blue', 'red']"
+    is-available
+  />
+</template>
+```
+
+UserProfile.vue
+
+```vue
+<script setup>
+const props = defineProps({
+  name: {
+    type: String,
+    required: true,
+    default: "",
+  },
+  age: {
+    type: Number,
+    required: true,
+    default: null,
+  },
+  favouriteColors: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+  isAvailable: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+});
+</script>
+
+<template>
+  <p>我的名字是 {{ props.name }}!</p>
+  <p>我的年龄是 {{ props.age }}!</p>
+  <p>我喜欢的颜色是 {{ props.favouriteColors.join(", ") }}!</p>
+  <p>我现在 {{ props.isAvailable ? '离职状态' : '在职' }}</p>
+</template>
+```
+
+![](/react.png)
+
+App.jsx
+
+```jsx
+import UserProfile from "./UserProfile.jsx";
+
+export default function App() {
+  return (
+    <UserProfile
+      name="张三"
+      age={20}
+      favouriteColors={["green", "blue", "red"]}
+      isAvailable
+    />
+  );
+}
+```
+
+UserProfile.jsx
+
+```jsx
+import PropTypes from "prop-types";
+
+export default function UserProfile({
+  name = "",
+  age = null,
+  favouriteColors = [],
+  isAvailable = false,
+}) {
+  return (
+    <>
+      <p>我的名字是 {name}!</p>
+      <p>我的年龄是 {age}!</p>
+      <p>我喜欢的颜色是 {favouriteColors.join(", ")}!</p>
+      <p>我现在 {isAvailable ? '离职状态' : '在职'}</p>
+    </>
+  );
+}
+
+UserProfile.propTypes = {
+  name: PropTypes.string.isRequired,
+  age: PropTypes.number.isRequired,
+  favouriteColors: PropTypes.arrayOf(PropTypes.string).isRequired,
+  isAvailable: PropTypes.bool.isRequired,
+};
+```
+
+
+
+
+
+

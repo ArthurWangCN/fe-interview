@@ -43,7 +43,16 @@ export const sidebarConst = {
         text: 'React',
         items: [
             { text: '基础', link: '/react/' },
-            { text: 'React 对比 Vue3', link: '/react/reactvsvue' }
+            { text: 'React 对比 Vue3', collapsed: true,
+                items: [
+                    { text: '响应式', link: '/react/reactvsvue-reactive'},
+                    { text: '最小模版', link: '/react/reactvsvue-template'},
+                    { text: '生命周期', link: '/react/reactvsvue-lifecycle'},
+                    { text: '组件组合使用', link: '/react/reactvsvue-component'},
+                    { text: '表单', link: '/react/reactvsvue-form'},
+                    { text: 'Web功能', link: '/react/reactvsvue-web'}
+                ]
+            }
         ]
     }],
     '/ts/': [{
