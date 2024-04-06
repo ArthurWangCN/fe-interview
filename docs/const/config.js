@@ -36,7 +36,7 @@ export const sidebarConst = {
     '/vue/': [{
         text: 'Vue.js',
         items: [
-            { text: '基础', link: '/vue/' }
+            { text: '基础', link: '/vue/'},
         ]
     }],
     '/react/': [{
