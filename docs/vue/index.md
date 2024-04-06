@@ -937,3 +937,554 @@ export function watch<T = any, Immediate extends Readonly<boolean> = false>(
 ```
 
 :::
+
+
+
+## 31、SPA、SSR的区别是什么
+
+SPA（Single Page Application）即单页面应用。一般也称为 客户端渲染（Client Side Render）， 简称 CSR。SSR（Server Side Render）即 服务端渲染。一般也称为 多页面应用（Mulpile Page Application），简称 MPA。
+
+SPA应用只会首次请求html文件，后续只需要请求JSON数据即可，因此用户体验更好，节约流量，服务端压力也较小。但是首屏加载的时间会变长，而且SEO不友好。为了解决以上缺点，就有了SSR方案，由于HTML内容在服务器一次性生成出来，首屏加载快，搜索引擎也可以很方便的抓取页面信息。但同时SSR方案也会有性能，开发受限等问题。
+
+在选择上，如果我们的应用存在首屏加载优化需求，SEO需求时，就可以考虑SSR。
+
+但并不是只有这一种替代方案，比如对一些不常变化的静态网站，SSR反而浪费资源，我们可以考虑预渲染（prerender）方案。另外nuxt.js/next.js中给我们提供了SSG（Static Site Generate）静态网站生成方案也是很好的静态站点解决方案，结合一些CI手段，可以起到很好的优化效果，且能节约服务器资源。
+
+
+
+## 32、vue-loader是什么
+
+vue-loader是用于处理单文件组件（SFC，Single-File Component）的webpack loader
+
+因为有了vue-loader，我们就可以在项目中编写SFC格式的Vue组件，我们可以把代码分割为、`<script>和<style>`，代码会异常清晰。结合其他loader我们还可以用Pug编写，用SASS编写 style，用TS编写 script。我们的 style 还可以单独作用当前组件。
+
+webpack打包时，会以loader的方式调用vue-loader
+
+vue-loader被执行时，它会对SFC中的每个语言块用单独的loader链处理。最后将这些单独的块装配成最终的组件模块。
+
+:::info
+
+vue-loader会调用@vue/compiler-sfc模块解析SFC源码为一个描述符（Descriptor），然后为每个语言块生成import代码，返回的代码类似下面：
+
+```js
+// source.vue被vue-loader处理之后返回的代码
+// import the <template> block
+import render from 'source.vue?vue&type=template'
+// import the <script> block
+import script from 'source.vue?vue&type=script'
+export * from 'source.vue?vue&type=script'
+// import <style> blocks
+import 'source.vue?vue&type=style&index=1'
+script.render = render
+export default script
+```
+
+我们想要script块中的内容被作为js处理（当然如果是`<script lang="ts">`被作为ts处理），这样我们想要webpack把配置中跟.js匹配的规则都应用到形如source.vue?vue&type=script的这个请求上。例如我们对所有*.js配置了babel-loader，这个规则将被克隆并应用到所在Vue SFC的
+
+```js
+import script from 'source.vue?vue&type=script'
+// 将被展开为
+import script from 'babel-loader!vue-loader!source.vue?vue&type=script'
+```
+
+类似的，如果我们对.sass文件配置了style-loader + css-loader + sass-loader，对下面的代码 `<style scoped lang="scss">` 将返回：
+
+```js
+import 'source.vue?vue&type=style&index=1&scoped&lang=scss'
+```
+
+然后webpack会展开如下：
+
+```js
+import 'style-loader!css-loader!sass-loader!vue-loader!source.vue?vue&type=style&index=1&scoped&lang=scss'
+```
+
+当处理展开请求时，vue-loader将被再次调用。这次，loader将会关注那些有查询串的请求，且仅针对特定块，它会选中特定块内部的内容并传递给后面匹配的loader。
+
+对于 `<script>` 块，处理到这就可以了，但是 和  `<style>` 还有一些额外任务要做，比如：
+
+- 需要用Vue 模板编译器编译template，从而得到render函数
+- 需要对 `<style scoped>` 中的CSS做后处理（post-process），该操作在css-loader之后但在style-loader之前
+
+实现上这些附加的loader需要被注入到已经展开的loader链上，最终的请求会像下面这样：
+
+```js
+// <template lang="pug">
+import 'vue-loader/template-loader!pug-loader!source.vue?vue&type=template'
+
+// <style scoped lang="scss">
+import 'style-loader!vue-loader/style-post-loader!css-loader!sass-loader!vue-loader!source.vue?vue&type=style&index=1&scoped&lang=scss'
+```
+
+:::
+
+
+
+## 33、写过自定义指令吗
+
+Vue有一组默认指令，比如v-model或v-for，同时Vue也允许用户注册自定义指令来扩展Vue能力
+
+自定义指令主要完成一些可复用低层级DOM操作
+
+使用自定义指令分为定义、注册和使用三步：
+
+1. 定义自定义指令有两种方式：对象和函数形式，前者类似组件定义，有各种生命周期；后者只会在mounted和updated时执行
+2. 注册自定义指令类似组件，可以使用app.directive()全局注册，使用{directives:{xxx}}局部注册
+3. 使用时在注册名称前加上v-即可，比如v-focus
+
+我在项目中常用到一些自定义指令，例如：
+
+- 复制粘贴 v-copy
+- 长按 v-longpress
+- 防抖 v-debounce
+- 图片懒加载 v-lazy
+- 按钮权限 v-premission
+- 页面水印 v-waterMarker
+- 拖拽指令 v-draggable
+
+vue3中指令定义发生了比较大的变化，主要是钩子的名称保持和组件一致，这样开发人员容易记忆，不易犯错。另外在v3.2之后，可以在setup中以一个小写v开头方便的定义自定义指令。
+
+编译后的自定义指令会被withDirective函数装饰，进一步处理生成的vnode，添加到特定属性中。
+
+
+
+## 34、v-once的使用场景
+
+v-once是vue的内置指令，作用是仅渲染指定组件或元素一次，并跳过未来对其更新。
+
+如果我们有一些元素或者组件在初始化渲染之后不再需要变化，这种情况下适合使用v-once，这样哪怕这些数据变化，vue也会跳过更新，是一种代码优化手段。
+
+我们只需要作用的组件或元素上加上v-once即可。
+
+vue3.2之后，又增加了v-memo指令，可以有条件缓存部分模板并控制它们的更新，可以说控制力更强了。
+
+编译器发现元素上面有v-once时，会将首次计算结果存入缓存对象，组件再次渲染时就会从缓存获取，从而避免再次计算。
+
+:::info
+
+我们发现v-once出现后，编译器会缓存作用元素或组件，从而避免以后更新时重新计算这一部分：
+
+```js
+// ...
+return (_ctx, _cache) => {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    // 从缓存获取vnode
+    _cache[0] || (
+      _setBlockTracking(-1),
+      _cache[0] = _createElementVNode("h1", null, [
+        _createTextVNode(_toDisplayString(msg.value), 1 /* TEXT */)
+      ]),
+      _setBlockTracking(1),
+      _cache[0]
+    ),
+// ...
+```
+
+:::
+
+
+
+## 35、什么是递归组件
+
+如果某个组件通过组件名称引用它自己，这种情况就是递归组件。
+
+实际开发中类似Tree、Menu这类组件，它们的节点往往包含子节点，子节点结构和父节点往往是相同的。这类组件的数据往往也是树形结构，这种都是使用递归组件的典型场景。
+
+使用递归组件时，由于我们并未也不能在组件内部导入它自己，所以设置组件name属性，用来查找组件定义，如果使用SFC，则可以通过SFC文件名推断。组件内部通常也要有递归结束条件，比如model.children这样的判断。
+
+查看生成渲染函数可知，递归组件查找时会传递一个布尔值给resolveComponent，这样实际获取的组件就是当前组件本身。
+
+:::info
+
+递归组件编译结果中，获取组件时会传递一个标识符 `_resolveComponent("Comp", true)`
+
+```js
+const _component_Comp = _resolveComponent("Comp", true)
+```
+
+就是在传递maybeSelfReference
+
+```ts
+export function resolveComponent(
+  name: string,
+  maybeSelfReference?: boolean
+): ConcreteComponent | string {
+  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name
+}
+```
+
+resolveAsset中最终返回的是组件自身：
+
+```ts
+if (!res && maybeSelfReference) {
+    // fallback to implicit self-reference
+    return Component
+}
+```
+
+:::
+
+
+
+## 36、异步组件是什么
+
+在大型应用中，我们需要分割应用为更小的块，并且在需要组件时再加载它们。
+
+我们不仅可以在路由切换时懒加载组件，还可以在页面组件中继续使用异步组件，从而实现更细的分割粒度。
+
+使用异步组件最简单的方式是直接给defineAsyncComponent指定一个loader函数，结合ES模块动态导入函数import可以快速实现。我们甚至可以指定loadingComponent和errorComponent选项从而给用户一个很好的加载反馈。另外Vue3中还可以结合Suspense组件使用异步组件。
+
+异步组件容易和路由懒加载混淆，实际上不是一个东西。异步组件不能被用于定义懒加载路由上，处理它的是vue框架，处理路由组件加载的是vue-router。但是可以在懒加载的路由组件中使用异步组件。
+
+> defineAsyncComponent定义了一个高阶组件，返回一个包装组件。包装组件根据加载器的状态决定渲染什么内容。
+
+
+
+## 37、怎么处理vue项目中的错误
+
+应用中的错误类型分为"接口异常"和“代码逻辑异常”
+
+我们需要根据不同错误类型做相应处理：接口异常是我们请求后端接口过程中发生的异常，可能是请求失败，也可能是请求获得了服务器响应，但是返回的是错误状态。以Axios为例，这类异常我们可以通过封装Axios，在拦截器中统一处理整个应用中请求的错误。代码逻辑异常是我们编写的前端代码中存在逻辑上的错误造成的异常，vue应用中最常见的方式是使用全局错误处理函数app.config.errorHandler收集错误。
+
+收集到错误之后，需要统一处理这些异常：分析错误，获取需要错误信息和数据。这里应该有效区分错误类型，如果是请求错误，需要上报接口信息，参数，状态码等；对于前端逻辑异常，获取错误名称和详情即可。另外还可以收集应用名称、环境、版本、用户信息，所在页面等。这些信息可以通过vuex存储的全局状态和路由信息获取。
+
+全局捕获异常：
+
+```ts
+import { createApp } from 'vue'
+const app = createApp(...)
+app.config.errorHandler = (err, instance, info) => {
+  // report error to tracking services
+}
+```
+
+处理前端逻辑错误：
+
+```ts
+function handleError(error, type) {
+  if(type == 2) {
+    let errData = null
+    // 逻辑错误
+    if(error instanceof Error) {
+      let { name, message } = error
+      errData = {
+        type: name,
+        error: message
+      }
+    } else {
+      errData = {
+        type: 'other',
+        error: JSON.strigify(error)
+      }
+    }
+  }
+}
+```
+
+
+
+## 38、实现一个vuex
+
+官方说vuex是一个状态管理模式和库，并确保这些状态以可预期的方式变更。可见要实现一个vuex：
+
+- 要实现一个Store存储全局状态
+- 要提供修改状态所需API：commit(type, payload), dispatch(type, payload)
+
+实现Store时，可以定义Store类，构造函数接收选项options，设置属性state对外暴露状态，提供commit和dispatch修改属性state。这里需要设置state为响应式对象，同时将Store定义为一个Vue插件。
+
+commit(type, payload)方法中可以获取用户传入mutations并执行它，这样可以按用户提供的方法修改状态。 dispatch(type, payload)类似，但需要注意它可能是异步的，需要返回一个Promise给用户以处理异步结果。
+
+```ts
+class Store {
+    constructor(options) {
+        this.state = reactive(options.state)
+        this.options = options
+    }
+    commit(type, payload) {
+        this.options.mutations[type].call(this, this.state, payload)
+    }
+}
+```
+
+
+
+## 39、使用vue渲染大量数据时应该怎么优化
+
+在大型企业级项目中经常需要渲染大量数据，此时很容易出现卡顿的情况。比如大数据量的表格、树。
+
+处理时要根据情况做不通处理：
+
+- 可以采取分页的方式获取，避免渲染大量数据
+- vue-virtual-scroller等虚拟滚动方案，只渲染视口范围内的数据
+- 如果不需要更新，可以使用v-once方式只渲染一次
+- 通过v-memo可以缓存结果，结合v-for使用，避免数据变化时不必要的VNode创建
+- 可以采用懒加载方式，在用户需要的时候再加载数据，比如tree组件子树的懒加载
+
+总之，还是要看具体需求，首先从设计上避免大数据获取和渲染；实在需要这样做可以采用虚表的方式优化渲染；最后优化更新，如果不需要更新可以v-once处理，需要更新可以v-memo进一步优化大数据更新性能。其他可以采用的是交互方式优化，无限滚动、懒加载等方案。
+
+
+
+## 40、怎么监听vuex数据的变化
+
+vuex数据状态是响应式的，那自然可以watch，另外vuex也提供了订阅的API：store.subscribe()。
+
+我知道几种方法：
+
+- 可以通过watch选项或者watch方法监听状态
+- 可以使用vuex提供的API：store.subscribe()
+
+watch选项方式，可以以字符串形式监听 `$store.state.xx`；subscribe方式，可以调用 `store.subscribe(cb)` ,回调函数接收mutation对象和state对象，这样可以进一步判断mutation.type是否是期待的那个，从而进一步做后续处理。
+
+watch方式简单好用，且能获取变化前后值，首选；subscribe方法会被所有commit行为触发，因此还需要判断mutation.type，用起来略繁琐，一般用于vuex插件中。
+
+watch方式：
+
+```ts
+const app = createApp({
+  watch: {
+    '$store.state.counter'() {
+      console.log('counter change!');
+    }
+  }
+})
+```
+
+subscribe方式：
+
+```ts
+store.subscribe((mutation, state) => {
+  if (mutation.type === 'add') {
+    console.log('counter change in subscribe()!');
+  }
+})
+```
+
+
+
+## 41、router-link和router-view是如何起作用的
+
+vue-router中两个重要组件router-link和router-view，分别起到路由导航作用和组件内容渲染作用
+
+使用中router-link默认生成一个a标签，设置to属性定义跳转path。实际上也可以通过custom和插槽自定义最终的展现形式。router-view是要显示组件的占位组件，可以嵌套，对应路由配置的嵌套关系，配合name可以显示具名组件，起到更强的布局作用。
+
+router-link组件内部根据custom属性判断如何渲染最终生成节点，内部提供导航方法navigate，用户点击之后实际调用的是该方法，此方法最终会修改响应式的路由变量，然后重新去routes匹配出数组结果，router-view则根据其所处深度deep在匹配数组结果中找到对应的路由并获取组件，最终将其渲染出来。
+
+:::info
+
+router-link:
+
+```ts
+return () => {
+  const children = slots.default && slots.default(link)
+  return props.custom
+    ? children
+  : h(
+    'a',
+    {
+      'aria-current': link.isExactActive
+      ? props.ariaCurrentValue
+      : null,
+      href: link.href,
+      // this would override user added attrs but Vue will still add
+      // the listener, so we end up triggering both
+      onClick: link.navigate,
+      class: elClass.value,
+    },
+    children
+  )
+}
+```
+
+router-view:
+
+```ts
+return (
+  // pass the vnode to the slot as a prop.
+  // h and <component :is="..."> both accept vnodes
+  normalizeSlot(slots.default, { Component: component, route }) ||
+  component
+)
+```
+
+:::
+
+
+
+## 42、vue-router 跳转
+
+vue-router导航有两种方式：声明式导航和编程方式导航
+
+声明式导航方式使用router-link组件，添加to属性导航；编程方式导航更加灵活，可传递调用router.push()，并传递path字符串或者RouteLocationRaw对象，指定path、name、params等信息
+
+如果页面中简单表示跳转链接，使用router-link最快捷，会渲染一个a标签；如果页面是个复杂的内容，比如商品信息，可以添加点击事件，使用编程式导航
+
+实际上内部两者调用的导航函数是一样的：
+
+routerlink点击跳转，调用的是navigate方法。navigate内部依然调用的push。
+
+
+
+## 43、为什么要用 Proxy 替代 defineProperty
+
+JS中做属性拦截常见的方式有三：: defineProperty，getter/setters 和Proxies。
+
+Vue2中使用defineProperty的原因是，2013年时只能用这种方式。由于该API存在一些局限性，比如对于数组的拦截有问题，为此vue需要专门为数组响应式做一套实现。另外不能拦截那些新增、删除属性；最后defineProperty方案在初始化时需要深度递归遍历待处理的对象才能对它进行完全拦截，明显增加了初始化的时间。
+
+以上两点在Proxy出现之后迎刃而解，不仅可以对数组实现拦截，还能对Map、Set实现拦截；另外Proxy的拦截也是懒处理行为，如果用户没有访问嵌套对象，那么也不会实施拦截，这就让初始化的速度和内存占用都改善了。
+
+当然Proxy是有兼容性问题的，IE完全不支持，所以如果需要IE兼容就不合适
+
+:::info
+
+Proxy属性拦截的原理：利用get、set、deleteProperty这三个trap实现拦截
+
+```ts
+function reactive(obj) {
+    return new Proxy(obj, {
+        get(target, key) {},
+        set(target, key, val) {},
+        deleteProperty(target, key){}
+    })
+}
+```
+
+Object.defineProperty属性拦截原理：利用get、set这两个trap实现拦截
+
+```ts
+function defineReactive(obj, key, val) {
+    Object.defineReactive(obj, key, {
+        get(key) {},
+        set(key, val) {}
+    })
+}
+```
+
+:::
+
+
+
+## 44、History模式和Hash模式有何区别
+
+vue-router有3个模式，其中history和hash更为常用。两者差别主要在显示形式、seo和部署上。
+
+hash模式在地址栏显示的时候是已哈希的形式：#/xxx，这种方式使用和部署简单，但是不会被搜索引擎处理，seo有问题；history模式则建议用在大部分web项目上，但是它要求应用在部署时做特殊配置，服务器需要做回退处理，否则会出现刷新页面404的问题。
+
+底层实现上其实hash是一种特殊的history实现。
+
+```ts
+export function createWebHashHistory(base?: string): RouterHistory {
+  // Make sure this implementation is fine in terms of encoding, specially for IE11
+  // for `file://`, directly use the pathname and ignore the base
+  // location.pathname contains an initial `/` even at the root: `https://example.com`
+  base = location.host ? base || location.pathname + location.search : ''
+  // allow the user to provide a `#` in the middle: `/base/#/app`
+  if (!base.includes('#')) base += '#'
+
+  if (__DEV__ && !base.endsWith('#/') && !base.endsWith('#')) {
+    warn(
+      `A hash base must end with a "#":\n"${base}" should be "${base.replace(
+        /#.*$/,
+        '#'
+      )}".`
+    )
+  }
+  return createWebHistory(base)
+}
+```
+
+
+
+## 45、什么场景下会用到嵌套路由
+
+平时开发中，应用的有些界面是由多层级组件组合而来的，这种情况下，url各部分通常对应某个嵌套的组件，vue-router中可以使用嵌套路由表示这种关系
+
+表现形式是在两个路由间切换时，它们有公用的视图内容。此时通常提取一个父组件，内部放上，从而形成物理上的嵌套，和逻辑上的嵌套对应起来
+
+定义嵌套路由时使用children属性组织嵌套关系
+
+原理上是在router-view组件内部判断当前router-view处于嵌套层级的深度，讲这个深度作为匹配组件数组matched的索引，获取对应渲染组件，渲染之
+
+
+
+## 46、页面刷新后vuex的state数据丢失怎么解决
+
+vuex只是在内存保存状态，刷新之后就会丢失，如果要持久化就要存起来。
+
+localStorage就很合适，提交mutation的时候同时存入localStorage，store中把值取出作为state的初始值即可。
+
+这里有两个问题，不是所有状态都需要持久化；如果需要保存的状态很多，编写的代码就不够优雅，每个提交的地方都要单独做保存处理。这里就可以利用vuex提供的subscribe方法做一个统一的处理。甚至可以封装一个vuex插件以便复用。
+
+类似的插件有vuex-persist、vuex-persistedstate，内部的实现就是通过订阅mutation变化做统一处理，通过插件的选项控制哪些需要持久化
+
+
+
+## 47、你觉得vuex有什么缺点
+
+vuex利用响应式，使用起来已经相当方便快捷了。但是在使用过程中感觉模块化这一块做的过于复杂，用的时候容易出错，还要经常查看文档
+
+比如：访问state时要带上模块key，内嵌模块的话会很长，不得不配合mapState使用，加不加namespaced区别也很大，getters，mutations，actions这些默认是全局，加上之后必须用字符串类型的path来匹配，使用模式不统一，容易出错；对ts的支持也不友好，在使用模块时没有代码提示。
+
+之前Vue2项目中用过vuex-module-decorators的解决方案，虽然类型支持上有所改善，但又要学一套新东西，增加了学习成本。pinia出现之后使用体验好了很多，Vue3 + pinia会是更好的组合。
+
+:::info
+
+下面我们来看看vuex中store.state.x.y这种嵌套的路径是怎么搞出来的。
+
+首先是子模块安装过程：父模块状态parentState上面设置了子模块名称moduleName，值为当前模块state对象。放在上面的例子中相当于：`store.state['x'] = moduleX.state`。此过程是递归的，那么store.state.x.y安装时就是：`store.state['x']['y'] = moduleY.state`。
+
+```ts
+if (!isRoot && !hot) {
+    // 获取父模块state
+    const parentState = getNestedState(rootState, path.slice(0, -1))
+    // 获取子模块名称
+    const moduleName = path[path.length - 1]
+    store._withCommit(() => {
+        // 把子模块state设置到父模块上
+        parentState[moduleName] = module.state
+    })
+}
+```
+
+:::
+
+
+
+## 48、Composition API 与 Options API 有什么不同
+
+Composition API是一组API，包括：Reactivity API、生命周期钩子、依赖注入，使用户可以通过导入函数方式编写vue组件。而Options API则通过声明组件选项的对象形式编写组件。
+
+Composition API最主要作用是能够简洁、高效复用逻辑。解决了过去Options API中mixins的各种缺点；另外Composition API具有更加敏捷的代码组织能力，很多用户喜欢Options API，认为所有东西都有固定位置的选项放置代码，但是单个组件增长过大之后这反而成为限制，一个逻辑关注点分散在组件各处，形成代码碎片，维护时需要反复横跳，Composition API则可以将它们有效组织在一起。最后Composition API拥有更好的类型推断，对ts支持更友好，Options API在设计之初并未考虑类型推断因素，虽然官方为此做了很多复杂的类型体操，确保用户可以在使用Options API时获得类型推断，然而还是没办法用在mixins和provide/inject上。
+
+Vue3首推Composition API，但是这会让我们在代码组织上多花点心思，因此在选择上，如果我们项目属于中低复杂度的场景，Options API仍是一个好选择。对于那些大型，高扩展，强维护的项目上，Composition API会获得更大收益。
+
+
+
+## 49、vue-router中如何保护路由
+
+vue-router中保护路由的方法叫做路由守卫，主要用来通过跳转或取消的方式守卫导航。
+
+路由守卫有三个级别：全局，路由独享，组件级。影响范围由大到小，例如全局的router.beforeEach()，可以注册一个全局前置守卫，每次路由导航都会经过这个守卫，因此在其内部可以加入控制逻辑决定用户是否可以导航到目标路由；在路由注册的时候可以加入单路由独享的守卫，例如beforeEnter，守卫只在进入路由时触发，因此只会影响这个路由，控制更精确；我们还可以为路由组件添加守卫配置，例如beforeRouteEnter，会在渲染该组件的对应路由被验证前调用，控制的范围更精确了。
+
+用户的任何导航行为都会走navigate方法，内部有个guards队列按顺序执行用户注册的守卫钩子函数，如果没有通过验证逻辑则会取消原有的导航。
+
+:::info
+
+runGuardQueue(guards)链式的执行用户在各级别注册的守卫钩子函数，通过则继续下一个级别的守卫，不通过进入catch流程取消原本导航。
+
+```ts
+return (
+  runGuardQueue(guards)
+  .then(() => {
+    // check global guards beforeEach
+    guards = []
+    for (const guard of beforeGuards.list()) {
+      guards.push(guardToPromiseFn(guard, to, from))
+    }
+    guards.push(canceledNavigationCheck)
+
+    return runGuardQueue(guards)
+  })
+  // ...
+```
+
+:::
