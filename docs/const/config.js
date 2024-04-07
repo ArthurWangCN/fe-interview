@@ -72,7 +72,8 @@ export const sidebarConst = {
     '/open/': [{
         text: '开放题',
         items: [
-            { text: '基础', link: '/open/' }
+            { text: '基础', link: '/open/' },
+            { text: '被辞退的应对措施', link: '/open/dismiss' }
         ]
     }],
 }
