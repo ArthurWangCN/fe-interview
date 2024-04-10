@@ -73,7 +73,8 @@ export const sidebarConst = {
         text: '开放题',
         items: [
             { text: '基础', link: '/open/' },
-            { text: '被辞退的应对措施', link: '/open/dismiss' }
+            { text: '被辞退的应对措施', link: '/open/dismiss' },
+            { text: '提离职的正确方式', link: '/open/resign' }
         ]
     }],
 }
