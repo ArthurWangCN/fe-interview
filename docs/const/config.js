@@ -8,6 +8,7 @@ export const navConst = [
     { text: 'React', link: '/react/'},
     { text: 'TypeScript', link: '/ts/'},
     { text: '工程化', link: '/engineering/', activeMatch: '/engineering/'},
+    { text: '工作', link: '/work/', activeMatch: '/work/'},
     { text: '开放题', link: '/open/', activeMatch: '/open/'},
 ]
 
@@ -69,12 +70,20 @@ export const sidebarConst = {
             { text: 'Webpack', link: '/engineering/webpack' },
         ]
     }],
+    '/work/': [{
+        text: '工作',
+        items: [
+            { text: '基础', link: '/work/' },
+            { text: '大厂真实git开发流程', link: '/work/git' },
+        ]
+    }],
     '/open/': [{
         text: '开放题',
         items: [
             { text: '基础', link: '/open/' },
             { text: '被辞退的应对措施', link: '/open/dismiss' },
-            { text: '提离职的正确方式', link: '/open/resign' }
+            { text: '提离职的正确方式', link: '/open/resign' },
+            { text: '6 个常见的离职原因', link: '/open/resign-reason' }
         ]
     }],
 }
